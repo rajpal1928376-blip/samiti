@@ -30,6 +30,7 @@ label{font-size:13px;color:var(--mu)}
 .c .r:last-child{border:0}.cur{background:var(--ac2);border-radius:8px;padding-left:6px;padding-right:6px}
 .s{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:8px;padding:5px 9px;font:inherit;font-size:12px}
 .x{color:var(--bad)}.gn{color:var(--ok)}
+.na .big .b,.na button[data-u]{opacity:.55}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav button{flex:1;padding:10px 2px;border:0;background:none;color:var(--mu);font:inherit;font-size:12px}
 nav button.on{color:var(--ac);font-weight:700}
@@ -46,7 +47,7 @@ nav span{display:block;font-size:20px}
 <button data-t="pg" onclick="go('pg')"><span>📝</span>पन्ने</button>
 </nav>
 <script>
-const def=()=>({m:[],t:0,p:[],l:[],n:[],g:[{t:'मेरा हिसाब',x:''},{t:'ज़रूरी बातें',x:''}],bh:201});
+const def=()=>({m:[],t:0,p:[],l:[],n:[],g:[{t:'मेरा हिसाब',x:''},{t:'ज़रूरी बातें',x:''}],bh:201,sm:''});
 let S=def(),tab='turn',armed='',adm=false,showSet=false,msg='',ed=null,ready=false,F=null;
 Object.defineProperty(window,'BH',{get:()=>S.bh||201});
 const save=()=>{if(!F)return;F.put(JSON.parse(JSON.stringify(S))).catch(e=>{msg='सेव नहीं हुआ ('+(e.code||'')+'). लॉगिन जाँचें।';showSet=true;render()})};
@@ -63,6 +64,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const ph=m=>(m.phone||'').replace(/\D/g,'').slice(-10);
 const wa=m=>'https://wa.me/91'+ph(m)+'?text='+encodeURIComponent('जय श्री राम! 🙏 '+m.name+' जी, आज आपका सुंदरकांड है। कृपया समय पर पधारें।');
 const sum=a=>a.reduce((s,x)=>s+x.a,0);
+const cnt=m=>S.p.filter(x=>x.mid?x.mid==m.id:x.n==m.name).length;
 const A=()=>{if(adm)return true;showSet=true;msg='बदलाव के लिए पहले लॉगिन करें';render();scrollTo(0,0);return false};
 const db=(k,id)=>adm?`<button class="s x" onclick="del('${k}','${id}')">${armed===k+id?'पक्का?':'हटाएँ'}</button>`:'';
 const eb=(k,id)=>adm?`<button class="s" onclick="ed={k:'${k}',id:'${id}'};render();scrollTo(0,0)">✏️</button>`:'';
@@ -71,15 +73,17 @@ function del(k,id){if(!A())return;if(armed!==k+id){armed=k+id;render();return}ar
  if(k=='m'){const i=S.m.findIndex(x=>x.id==id);S.m.splice(i,1);if(S.t>i)S.t--}
  else if(k=='p')S.p=S.p.filter(x=>x.id!=id);else S.l=S.l.filter(x=>x.id!=id);save();render()}
 function go(t){tab=t;armed='';ed=null;render();scrollTo(0,0)}
-function render(){if(!ready)return;$('#gear').textContent=adm?'🔓':'⚙️';document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+function render(){if(!ready)return;document.body.classList.toggle('na',!adm);$('#gear').textContent=adm?'🔓':'⚙️';document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
  $('#app').innerHTML=vSet()+vEd()+vNote()+{turn:vTurn,mem:vMem,pay:vPay,acc:vAcc,pg:vPg}[tab]()}
 
 function vSet(){if(!showSet)return'';
  if(!adm)return `<div class="c" style="border-color:var(--ac)"><h3>⚙️ एडमिन लॉगिन</h3><small>बिना लॉगिन के सिर्फ़ देख सकते हैं।</small><input id="em" type="email" placeholder="ईमेल" autocomplete="username"><input id="pw" type="password" placeholder="पासवर्ड" autocomplete="current-password"><div class="x">${msg}</div><button class="b p" onclick="login()">लॉगिन</button></div>`;
- return `<div class="c" style="border-color:var(--ac)"><h3>⚙️ एडमिन मोड चालू ✅</h3><button class="b" onclick="logout()">लॉगआउट</button><h3 style="margin-top:12px">तय भेंट (₹)</h3><input id="bhi" type="number" value="${BH}"><button class="b" onclick="setBh()">रकम सेव करें</button><h3 style="margin-top:12px">बैकअप</h3><small>पूरा डेटा। कॉपी करके सुरक्षित रखें। ज़रूरत पड़ने पर यहीं चिपकाकर “लोड करें” दबाएँ।</small><textarea id="bk" rows="4">${esc(JSON.stringify(S))}</textarea><div class="x">${msg}</div><button class="b" onclick="restore()">लोड करें</button></div>`}
+ return `<div class="c" style="border-color:var(--ac)"><h3>⚙️ एडमिन मोड चालू ✅</h3><button class="b" onclick="logout()">लॉगआउट</button><h3 style="margin-top:12px">तय भेंट (₹)</h3><input id="bhi" type="number" value="${BH}"><button class="b" onclick="setBh()">रकम सेव करें</button><h3 style="margin-top:12px">🛒 सुंदरकांड की सामग्री (संदेश में जाएगी)</h3><textarea id="sm" rows="6" placeholder="हर सामग्री नई लाइन में लिखें">${esc(S.sm||'')}</textarea><button class="b" onclick="setSm()">सामग्री सेव करें</button><h3 style="margin-top:12px">💾 बैकअप (सुरक्षा के लिए)</h3><small>इस डिब्बे में पूरा हिसाब एक कोड के रूप में है। “बैकअप कॉपी करें” दबाकर WhatsApp में ख़ुद को भेज दें। कभी डेटा बिगड़ जाए तो वही कोड यहाँ चिपकाकर “लोड करें” दबाएँ।</small><textarea id="bk" rows="4">${esc(JSON.stringify(S))}</textarea><div class="x">${msg}</div><button class="b" onclick="copyBk()">📋 बैकअप कॉपी करें</button><button class="b" onclick="restore()">लोड करें (बैकअप वापस डालें)</button></div>`}
 async function login(){const e=$('#em').value.trim(),p=$('#pw').value;try{await F.login(e,p);msg='';showSet=false}catch(x){msg='ईमेल या पासवर्ड ग़लत है'}render()}
 function logout(){F.logout();showSet=false}
 function restore(){if(!A())return;try{const d=JSON.parse($('#bk').value);if(!Array.isArray(d.m)||!Array.isArray(d.p)||!Array.isArray(d.l))throw 0;S=Object.assign(def(),d);save();msg='';render()}catch(e){msg='डेटा सही नहीं है';render()}}
+function setSm(){if(!A())return;S.sm=$('#sm').value;save();msg='सामग्री सेव हो गई';render()}
+function copyBk(){const el=$('#bk');el.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}try{navigator.clipboard.writeText(el.value);ok=true}catch(e){}msg=ok?'कॉपी हो गया ✔':'डिब्बे को दबाकर रखें और ख़ुद कॉपी करें';render()}
 function setBh(){if(!A())return;const v=+$('#bhi').value;if(v>0){S.bh=v;save();msg='रकम सेव हो गई';render()}}
 
 function vEd(){if(!ed)return'';const{k,id}=ed;
@@ -100,8 +104,8 @@ function vTurn(){
  if(!S.m.length)return `<div class="c">अभी कोई सदस्य नहीं है।${adm?' “सदस्य” टैब में नाम और मोबाइल नंबर जोड़ें।':''}</div>`;
  if(S.t>=S.m.length)S.t=0;
  const m=S.m[S.t],nx=S.m[(S.t+1)%S.m.length],tot=sum(S.p);
- return `<div class="c big"><small>आज की बारी · नंबर ${S.t+1}/${S.m.length}</small><h2>${esc(m.name)}</h2><div>${esc(m.phone||'')}</div>
- <div class="row"><button class="b" onclick="act('tel')">📞 कॉल</button><button class="b" onclick="act('wa')">💬 WhatsApp</button></div><div class="row"><button class="b" onclick="act('sms')">✉️ SMS</button><button class="b" onclick="cp('n')">📋 नंबर</button><button class="b" onclick="cp('m')">📋 संदेश</button></div><div id="tm" class="gn" style="margin-top:8px;font-size:13px"></div></div>`+
+ return `<div class="c big"><small>आज की बारी · नंबर ${S.t+1}/${S.m.length}</small><h2>${esc(m.name)}</h2><div>${esc(m.phone||'')}</div><div><small>🔢 अब तक ${cnt(m)} बार सुंदरकांड करवाया</small></div>
+ <div class="row"><button class="b" onclick="act('tel')">📞 कॉल</button><button class="b" onclick="act('wa')">💬 WhatsApp</button></div><div class="row"><button class="b" onclick="act('sms')">✉️ SMS</button><button class="b" onclick="cp('n')">📋 नंबर</button><button class="b" onclick="cp('m')">📋 संदेश</button></div><div class="row"><button class="b" onclick="act('sw')">🛒 सामग्री (WhatsApp)</button><button class="b" onclick="act('ss')">🛒 सामग्री (SMS)</button></div><div id="tm" class="gn" style="margin-top:8px;font-size:13px"></div></div>`+
  (adm?`<div class="c"><h3>सुंदरकांड हो गया? भेंट लिखें</h3>
  <label>तारीख</label><input type="date" id="pd" value="${today()}">
  <label>भेंट (₹)</label><input type="number" id="pa" value="${BH}" inputmode="numeric" oninput="calc()">
@@ -109,25 +113,30 @@ function vTurn(){
  <button class="b p" onclick="done()">✔ पाठ दर्ज करें, अगला नंबर</button>
  <button class="b" onclick="skip()">⏭ इनकी बारी छोड़ें</button></div>`:lock+`<div class="c">अब तक कुल भेंट: <b>${rs(tot)}</b></div>`)+
  `<div class="c">अगली बारी: <b>${esc(nx.name)}</b><br><small>${S.p.length} पाठ हो चुके</small></div>`}
+const mt=m=>encodeURIComponent('जय श्री राम! 🙏 '+m.name+' जी, आपके यहाँ सुंदरकांड के लिए ये सामग्री चाहिए:\n'+(S.sm||'').trim()+'\n\nकृपया समय पर व्यवस्था करें। 🙏');
 function tmsg(t){const e=$('#tm');if(e)e.textContent=t}
-function openU(u){let w=null;try{w=window.open(u,'_blank')}catch(e){}if(!w){try{window.top.location.href=u}catch(e){try{location.href=u}catch(e2){}}}}
-function act(t){const m=S.m[S.t];if(!m||!ph(m)){tmsg('इस सदस्य का मोबाइल नंबर नहीं है।');return}const n=ph(m);
- if(t=='wa')openU(wa(m));else{const u=(t=='tel'?'tel:'+n:'sms:'+n+'?body='+wa(m).split('text=')[1]);try{window.top.location.href=u}catch(e){try{location.href=u}catch(e2){}}}
+function openU(u){if(!A())return;let w=null;try{w=window.open(u,'_blank')}catch(e){}if(!w){try{window.top.location.href=u}catch(e){try{location.href=u}catch(e2){}}}}
+function act(t){if(!A())return;const m=S.m[S.t];if(!m||!ph(m)){tmsg('इस सदस्य का मोबाइल नंबर नहीं है।');return}const n=ph(m);
+ if((t=='sw'||t=='ss')&&!(S.sm||'').trim()){tmsg('सामग्री अभी नहीं लिखी गई है'+(adm?'। ⚙️ में लिखें।':'।'));return}
+ if(t=='wa')openU(wa(m));else if(t=='sw')openU('https://wa.me/91'+n+'?text='+mt(m));else{const u=(t=='tel'?'tel:'+n:'sms:'+n+'?body='+(t=='ss'?mt(m):wa(m).split('text=')[1]));try{window.top.location.href=u}catch(e){try{location.href=u}catch(e2){}}}
  tmsg('न खुले तो “📋 नंबर” दबाकर कॉपी करें और डायल करें: '+n)}
-function cp(w){const m=S.m[S.t];if(!m||!ph(m)){tmsg('इस सदस्य का मोबाइल नंबर नहीं है।');return}const t=w=='n'?ph(m):decodeURIComponent(wa(m).split('text=')[1]);
+function cp(w){if(!A())return;const m=S.m[S.t];if(!m||!ph(m)){tmsg('इस सदस्य का मोबाइल नंबर नहीं है।');return}const t=w=='n'?ph(m):decodeURIComponent(wa(m).split('text=')[1]);
  const ok=()=>tmsg('कॉपी हो गया ✔ '+t.slice(0,40));
  const fb=()=>{const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();try{document.execCommand('copy');ok()}catch(e){tmsg('नंबर: '+t)}x.remove()};
  try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}}
 function calc(){$('#nt').textContent=rs(sum(S.p)+(+$('#pa').value||0))}
-function done(){if(!A())return;const m=S.m[S.t];S.p.push({id:uid(),d:$('#pd').value||today(),n:m.name,a:+$('#pa').value||0});S.t=(S.t+1)%S.m.length;save();render()}
+function done(){if(!A())return;const m=S.m[S.t];S.p.push({id:uid(),d:$('#pd').value||today(),n:m.name,mid:m.id,a:+$('#pa').value||0});S.t=(S.t+1)%S.m.length;save();render()}
 function skip(){if(!A())return;S.t=(S.t+1)%S.m.length;save();render()}
 function setT(i){if(!A())return;S.t=i;save();render()}
 
 function vMem(){return (adm?`<div class="c"><h3>सदस्य जोड़ें</h3><input id="mn" placeholder="नाम"><input id="mp" type="tel" placeholder="मोबाइल नंबर"><button class="b p" onclick="addM()">+ जोड़ें</button></div>
- <div class="c"><h3>एक साथ कई नाम</h3><small>हर लाइन में: नाम, नंबर</small><textarea id="bulk" rows="5" placeholder="रोहित शर्मा, 9876543210"></textarea><button class="b" onclick="bulkM()">सब जोड़ें</button></div>`:lock)+
- `<div class="c"><h3>सदस्य (${S.m.length})</h3>${S.m.map((m,i)=>`<div class="r ${i==S.t?'cur':''}"><div><b>${i+1}. ${esc(m.name)}</b><br><small>${esc(m.phone||'')}</small></div><div>${adm?`<button class="s" onclick="setT(${i})">बारी</button> `:''}${eb('m',m.id)} ${db('m',m.id)}</div></div>`).join('')||'<small>अभी कोई नहीं</small>'}</div>`}
+ <div class="c"><h3>एक साथ कई सदस्य</h3><small>हर पंक्ति में नाम और नंबर अलग-अलग लिखें</small>${bv.map((r,i)=>`<div class="row"><input id="bn${i}" placeholder="नाम" value="${esc(r.n||'')}"><input id="bp${i}" type="tel" placeholder="नंबर" value="${esc(r.p||'')}"></div>`).join('')}<button class="b" onclick="moreB()">+ 5 पंक्तियाँ और</button><button class="b p" onclick="bulkM()">सब जोड़ें</button></div>`:lock)+
+ `<div class="c"><h3>सदस्य (${S.m.length})</h3>${S.m.map((m,i)=>`<div class="r ${i==S.t?'cur':''}"><div><b>${i+1}. ${esc(m.name)}</b><br><small>${esc(m.phone||'')} · 🔢 ${cnt(m)} बार</small></div><div>${adm?`<button class="s" onclick="setT(${i})">बारी</button> `:''}${eb('m',m.id)} ${db('m',m.id)}</div></div>`).join('')||'<small>अभी कोई नहीं</small>'}</div>`}
 function addM(){if(!A())return;const n=$('#mn').value.trim();if(!n)return;S.m.push({id:uid(),name:n,phone:$('#mp').value.trim()});save();render()}
-function bulkM(){if(!A())return;$('#bulk').value.split('\n').forEach(l=>{const p=l.split(/[,\t]/);const n=(p.shift()||'').trim();if(n)S.m.push({id:uid(),name:n,phone:p.join('').replace(/\D/g,'')})});save();render()}
+let bv=[{},{},{},{},{}];
+function rdB(){bv=bv.map((_,i)=>({n:($('#bn'+i)||{}).value||'',p:($('#bp'+i)||{}).value||''}))}
+function moreB(){rdB();bv.push({},{},{},{},{});render()}
+function bulkM(){if(!A())return;rdB();bv.forEach(r=>{const n=(r.n||'').trim();if(n)S.m.push({id:uid(),name:n,phone:(r.p||'').replace(/\D/g,'')})});bv=[{},{},{},{},{}];save();render()}
 
 function vPay(){const due=S.p.reduce((s,x)=>s+Math.max(0,BH-x.a),0);
  return (adm?'':lock)+`<div class="c"><b>कुल भेंट: ${rs(sum(S.p))}</b> · ${S.p.length} पाठ${due?`<br><small>तय ₹${BH} से कम/बाकी: <b class="x">${rs(due)}</b></small>`:''}</div><div class="c">`+
