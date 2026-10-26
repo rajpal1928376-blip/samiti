@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d9531e">
+<link rel="manifest" href="manifest.json">
+<title>सुंदरकांड समिति</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff8ef;--card:#ffffff;--tx:#2b1a0e;--mu:#7a6552;--ac:#d9531e;--ac2:#fde4d3;--ok:#1f7a3f;--bad:#b3261e;--bd:#ecd9c4;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1410;--card:#2a201a;--tx:#f6e9dc;--mu:#b9a692;--ac:#ff8a55;--ac2:#4a2e20;--ok:#6fd48e;--bad:#ff8b82;--bd:#43342a;color-scheme:dark}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0 auto;background:var(--bg);color:var(--tx);font-family:"Noto Sans Devanagari",system-ui,sans-serif;padding:0 12px 96px;max-width:560px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin:12px 0 8px}
+h1{font-size:20px;margin:0;color:var(--ac)}
+.gear{border:1px solid var(--bd);background:var(--card);border-radius:50%;width:42px;height:42px;font-size:20px}
+.ban{background:linear-gradient(135deg,#ff9933,#d9531e);color:#fff;text-align:center;border-radius:14px;padding:10px;margin-bottom:10px;font-weight:700}
+h2{margin:4px 0;font-size:26px}h3{margin:0 0 8px;font-size:16px}
+small{color:var(--mu)}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px}
+.big{background:var(--ac2);text-align:center}
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.g .c{text-align:center;font-size:13px;padding:8px}.g b{font-size:16px}
+.ok b{color:var(--ok)}.bad b{color:var(--bad)}
+input,select,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit}
+label{font-size:13px;color:var(--mu)}
+.b{display:block;width:100%;text-align:center;padding:11px;margin-top:6px;border:1px solid var(--ac);border-radius:10px;background:transparent;color:var(--ac);font:inherit;font-weight:600;text-decoration:none}
+.b.p{background:var(--ac);color:#fff}
+.row{display:flex;gap:8px;margin-top:8px}.row .b{margin:0}
+.r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--bd)}
+.c .r:last-child{border:0}.cur{background:var(--ac2);border-radius:8px;padding-left:6px;padding-right:6px}
+.s{border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:8px;padding:5px 9px;font:inherit;font-size:12px}
+.x{color:var(--bad)}.gn{color:var(--ok)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;padding:10px 2px;border:0;background:none;color:var(--mu);font:inherit;font-size:12px}
+nav button.on{color:var(--ac);font-weight:700}
+nav span{display:block;font-size:20px}
+</style></head><body>
+<div class="hd"><h1>🙏 सुंदरकांड समिति</h1><button class="gear" id="gear" onclick="showSet=!showSet;msg='';render();scrollTo(0,0)">⚙️</button></div>
+<div class="ban">🚩 जय श्री राम · जय बजरंगबली 🚩</div>
+<div id="app"><div class="c">लोड हो रहा है…</div></div>
+<nav>
+<button data-t="turn" onclick="go('turn')"><span>🔔</span>बारी</button>
+<button data-t="mem" onclick="go('mem')"><span>👥</span>सदस्य</button>
+<button data-t="pay" onclick="go('pay')"><span>📿</span>पाठ-सूची</button>
+<button data-t="acc" onclick="go('acc')"><span>💰</span>हिसाब</button>
+<button data-t="pg" onclick="go('pg')"><span>📝</span>पन्ने</button>
+</nav>
+<script>
+const def=()=>({m:[],t:0,p:[],l:[],n:[],g:[{t:'मेरा हिसाब',x:''},{t:'ज़रूरी बातें',x:''}],bh:201});
+let S=def(),tab='turn',armed='',adm=false,showSet=false,msg='',ed=null,ready=false,F=null;
+Object.defineProperty(window,'BH',{get:()=>S.bh||201});
+const save=()=>{if(!F)return;F.put(JSON.parse(JSON.stringify(S))).catch(e=>{msg='सेव नहीं हुआ ('+(e.code||'')+'). लॉगिन जाँचें।';showSet=true;render()})};
+window.initFB=api=>{F=api;
+ api.onAuth(u=>{adm=!!u;if(!u)ed=null;render()});
+ api.watch(d=>{S=Object.assign(def(),d||{});ready=true;const a=document.activeElement;if(adm&&a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;render()},e=>{msg='डेटा नहीं मिला ('+(e.code||'')+')';ready=true;showSet=true;render()})};
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rs=n=>'₹'+Number(n).toLocaleString('en-IN');
+const today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+const fd=d=>{const[a,b,c]=d.split('-');return c+'/'+b+'/'+a};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const ph=m=>(m.phone||'').replace(/\D/g,'').slice(-10);
+const wa=m=>'https://wa.me/91'+ph(m)+'?text='+encodeURIComponent('जय श्री राम! 🙏 '+m.name+' जी, आज आपका सुंदरकांड है। कृपया समय पर पधारें।');
+const sum=a=>a.reduce((s,x)=>s+x.a,0);
+const A=()=>{if(adm)return true;showSet=true;msg='बदलाव के लिए पहले लॉगिन करें';render();scrollTo(0,0);return false};
+const db=(k,id)=>adm?`<button class="s x" onclick="del('${k}','${id}')">${armed===k+id?'पक्का?':'हटाएँ'}</button>`:'';
+const eb=(k,id)=>adm?`<button class="s" onclick="ed={k:'${k}',id:'${id}'};render();scrollTo(0,0)">✏️</button>`:'';
+const lock=`<div class="c"><small>🔒 आप सिर्फ़ देख सकते हैं। बदलाव के लिए ऊपर ⚙️ से लॉगिन करें।</small></div>`;
+function del(k,id){if(!A())return;if(armed!==k+id){armed=k+id;render();return}armed='';
+ if(k=='m'){const i=S.m.findIndex(x=>x.id==id);S.m.splice(i,1);if(S.t>i)S.t--}
+ else if(k=='p')S.p=S.p.filter(x=>x.id!=id);else S.l=S.l.filter(x=>x.id!=id);save();render()}
+function go(t){tab=t;armed='';ed=null;render();scrollTo(0,0)}
+function render(){if(!ready)return;$('#gear').textContent=adm?'🔓':'⚙️';document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+ $('#app').innerHTML=vSet()+vEd()+vNote()+{turn:vTurn,mem:vMem,pay:vPay,acc:vAcc,pg:vPg}[tab]()}
+
+function vSet(){if(!showSet)return'';
+ if(!adm)return `<div class="c" style="border-color:var(--ac)"><h3>⚙️ एडमिन लॉगिन</h3><small>बिना लॉगिन के सिर्फ़ देख सकते हैं।</small><input id="em" type="email" placeholder="ईमेल" autocomplete="username"><input id="pw" type="password" placeholder="पासवर्ड" autocomplete="current-password"><div class="x">${msg}</div><button class="b p" onclick="login()">लॉगिन</button></div>`;
+ return `<div class="c" style="border-color:var(--ac)"><h3>⚙️ एडमिन मोड चालू ✅</h3><button class="b" onclick="logout()">लॉगआउट</button><h3 style="margin-top:12px">तय भेंट (₹)</h3><input id="bhi" type="number" value="${BH}"><button class="b" onclick="setBh()">रकम सेव करें</button><h3 style="margin-top:12px">बैकअप</h3><small>पूरा डेटा। कॉपी करके सुरक्षित रखें। ज़रूरत पड़ने पर यहीं चिपकाकर “लोड करें” दबाएँ।</small><textarea id="bk" rows="4">${esc(JSON.stringify(S))}</textarea><div class="x">${msg}</div><button class="b" onclick="restore()">लोड करें</button></div>`}
+async function login(){const e=$('#em').value.trim(),p=$('#pw').value;try{await F.login(e,p);msg='';showSet=false}catch(x){msg='ईमेल या पासवर्ड ग़लत है'}render()}
+function logout(){F.logout();showSet=false}
+function restore(){if(!A())return;try{const d=JSON.parse($('#bk').value);if(!Array.isArray(d.m)||!Array.isArray(d.p)||!Array.isArray(d.l))throw 0;S=Object.assign(def(),d);save();msg='';render()}catch(e){msg='डेटा सही नहीं है';render()}}
+function setBh(){if(!A())return;const v=+$('#bhi').value;if(v>0){S.bh=v;save();msg='रकम सेव हो गई';render()}}
+
+function vEd(){if(!ed)return'';const{k,id}=ed;
+ const o=(k=='m'?S.m:k=='p'?S.p:S.l).find(x=>x.id==id);if(!o)return'';let f='';
+ if(k=='m')f=`<label>नाम</label><input id="e1" value="${esc(o.name)}"><label>मोबाइल</label><input id="e2" type="tel" value="${esc(o.phone||'')}">`;
+ else if(k=='p')f=`<label>नाम</label><input id="e1" value="${esc(o.n)}"><label>तारीख</label><input id="e2" type="date" value="${o.d}"><label>भेंट (₹) · 0 = नहीं दिया</label><input id="e3" type="number" value="${o.a}">`;
+ else f=`<label>प्रकार</label><select id="e4"><option value="1" ${o.j?'selected':''}>जमा (आया)</option><option value="0" ${o.j?'':'selected'}>खर्च (गया)</option></select><label>तारीख</label><input id="e2" type="date" value="${o.d}"><label>रकम (₹)</label><input id="e3" type="number" value="${o.a}"><label>किसलिए</label><input id="e1" value="${esc(o.n||'')}">`;
+ return `<div class="c" style="border-color:var(--ac)"><h3>✏️ बदलाव करें</h3>${f}<div class="row"><button class="b p" onclick="saveEd()">सेव करें</button><button class="b" onclick="ed=null;render()">रद्द</button></div></div>`}
+function saveEd(){if(!A())return;const{k,id}=ed;const v=i=>$('#'+i)?$('#'+i).value:'';
+ const o=(k=='m'?S.m:k=='p'?S.p:S.l).find(x=>x.id==id);
+ if(k=='m'){o.name=v('e1').trim()||o.name;o.phone=v('e2').trim()}
+ else if(k=='p'){o.n=v('e1').trim()||o.n;o.d=v('e2')||o.d;o.a=+v('e3')||0}
+ else{o.n=v('e1').trim();o.d=v('e2')||o.d;o.a=+v('e3')||0;o.j=+v('e4')}
+ ed=null;save();render()}
+
+function vNote(){if(tab!='turn'||!S.n.length)return'';const n=S.n[S.n.length-1];return `<div class="c" style="border-color:var(--ac);background:var(--ac2)"><b>📢 सूचना</b><br>${esc(n.x).replace(/\n/g,'<br>')}<br><small>${fd(n.d)}</small></div>`}
+function vTurn(){
+ if(!S.m.length)return `<div class="c">अभी कोई सदस्य नहीं है।${adm?' “सदस्य” टैब में नाम और मोबाइल नंबर जोड़ें।':''}</div>`;
+ if(S.t>=S.m.length)S.t=0;
+ const m=S.m[S.t],nx=S.m[(S.t+1)%S.m.length],tot=sum(S.p);
+ return `<div class="c big"><small>आज की बारी · नंबर ${S.t+1}/${S.m.length}</small><h2>${esc(m.name)}</h2><div>${esc(m.phone||'')}</div>
+ <div class="row"><button class="b" onclick="act('tel')">📞 कॉल</button><button class="b" onclick="act('wa')">💬 WhatsApp</button></div><div class="row"><button class="b" onclick="act('sms')">✉️ SMS</button><button class="b" onclick="cp('n')">📋 नंबर</button><button class="b" onclick="cp('m')">📋 संदेश</button></div><div id="tm" class="gn" style="margin-top:8px;font-size:13px"></div></div>`+
+ (adm?`<div class="c"><h3>सुंदरकांड हो गया? भेंट लिखें</h3>
+ <label>तारीख</label><input type="date" id="pd" value="${today()}">
+ <label>भेंट (₹)</label><input type="number" id="pa" value="${BH}" inputmode="numeric" oninput="calc()">
+ <div class="c" style="background:var(--ac2);margin:0">अब तक कुल: <b>${rs(tot)}</b><br>इस भेंट के बाद कुल: <b id="nt">${rs(tot+BH)}</b></div>
+ <button class="b p" onclick="done()">✔ पाठ दर्ज करें, अगला नंबर</button>
+ <button class="b" onclick="skip()">⏭ इनकी बारी छोड़ें</button></div>`:lock+`<div class="c">अब तक कुल भेंट: <b>${rs(tot)}</b></div>`)+
+ `<div class="c">अगली बारी: <b>${esc(nx.name)}</b><br><small>${S.p.length} पाठ हो चुके</small></div>`}
+function tmsg(t){const e=$('#tm');if(e)e.textContent=t}
+function openU(u){let w=null;try{w=window.open(u,'_blank')}catch(e){}if(!w){try{window.top.location.href=u}catch(e){try{location.href=u}catch(e2){}}}}
+function act(t){const m=S.m[S.t];if(!m||!ph(m)){tmsg('इस सदस्य का मोबाइल नंबर नहीं है।');return}const n=ph(m);
+ if(t=='wa')openU(wa(m));else{const u=(t=='tel'?'tel:'+n:'sms:'+n+'?body='+wa(m).split('text=')[1]);try{window.top.location.href=u}catch(e){try{location.href=u}catch(e2){}}}
+ tmsg('न खुले तो “📋 नंबर” दबाकर कॉपी करें और डायल करें: '+n)}
+function cp(w){const m=S.m[S.t];if(!m||!ph(m)){tmsg('इस सदस्य का मोबाइल नंबर नहीं है।');return}const t=w=='n'?ph(m):decodeURIComponent(wa(m).split('text=')[1]);
+ const ok=()=>tmsg('कॉपी हो गया ✔ '+t.slice(0,40));
+ const fb=()=>{const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();try{document.execCommand('copy');ok()}catch(e){tmsg('नंबर: '+t)}x.remove()};
+ try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}}
+function calc(){$('#nt').textContent=rs(sum(S.p)+(+$('#pa').value||0))}
+function done(){if(!A())return;const m=S.m[S.t];S.p.push({id:uid(),d:$('#pd').value||today(),n:m.name,a:+$('#pa').value||0});S.t=(S.t+1)%S.m.length;save();render()}
+function skip(){if(!A())return;S.t=(S.t+1)%S.m.length;save();render()}
+function setT(i){if(!A())return;S.t=i;save();render()}
+
+function vMem(){return (adm?`<div class="c"><h3>सदस्य जोड़ें</h3><input id="mn" placeholder="नाम"><input id="mp" type="tel" placeholder="मोबाइल नंबर"><button class="b p" onclick="addM()">+ जोड़ें</button></div>
+ <div class="c"><h3>एक साथ कई नाम</h3><small>हर लाइन में: नाम, नंबर</small><textarea id="bulk" rows="5" placeholder="रोहित शर्मा, 9876543210"></textarea><button class="b" onclick="bulkM()">सब जोड़ें</button></div>`:lock)+
+ `<div class="c"><h3>सदस्य (${S.m.length})</h3>${S.m.map((m,i)=>`<div class="r ${i==S.t?'cur':''}"><div><b>${i+1}. ${esc(m.name)}</b><br><small>${esc(m.phone||'')}</small></div><div>${adm?`<button class="s" onclick="setT(${i})">बारी</button> `:''}${eb('m',m.id)} ${db('m',m.id)}</div></div>`).join('')||'<small>अभी कोई नहीं</small>'}</div>`}
+function addM(){if(!A())return;const n=$('#mn').value.trim();if(!n)return;S.m.push({id:uid(),name:n,phone:$('#mp').value.trim()});save();render()}
+function bulkM(){if(!A())return;$('#bulk').value.split('\n').forEach(l=>{const p=l.split(/[,\t]/);const n=(p.shift()||'').trim();if(n)S.m.push({id:uid(),name:n,phone:p.join('').replace(/\D/g,'')})});save();render()}
+
+function vPay(){const due=S.p.reduce((s,x)=>s+Math.max(0,BH-x.a),0);
+ return (adm?'':lock)+`<div class="c"><b>कुल भेंट: ${rs(sum(S.p))}</b> · ${S.p.length} पाठ${due?`<br><small>तय ₹${BH} से कम/बाकी: <b class="x">${rs(due)}</b></small>`:''}</div><div class="c">`+
+ ([...S.p].reverse().map(x=>`<div class="r"><div><b>${esc(x.n)}</b><br><small>${fd(x.d)}</small></div><div>${x.a<=0?'<b class="x">नहीं दिया</b>':'<b>'+rs(x.a)+'</b>'+(x.a<BH?' <small class="x">कम</small>':'')} ${eb('p',x.id)} ${db('p',x.id)}</div></div>`).join('')||'<small>अभी कोई पाठ दर्ज नहीं</small>')+`</div>`}
+
+function rows(){const r=[...S.p.map(x=>({d:x.d,j:1,a:x.a,n:'सुंदरकांड – '+x.n,pid:x.id})),...S.l].sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);let b=0;r.forEach(x=>{b+=x.j?x.a:-x.a;x.b=b});return r}
+function vAcc(){const r=rows(),J=sum(r.filter(x=>x.j)),Kh=sum(r.filter(x=>!x.j));
+ return `<div class="g"><div class="c ok">जमा (आया)<br><b>${rs(J)}</b></div><div class="c bad">खर्च (गया)<br><b>${rs(Kh)}</b></div><div class="c">बचत<br><b>${rs(J-Kh)}</b></div></div>`+
+ (adm?`<div class="c"><h3>नई एंट्री</h3><select id="lt"><option value="1">जमा (पैसा आया)</option><option value="0">खर्च (पैसा गया)</option></select>
+ <input type="date" id="ld" value="${today()}"><input type="number" id="la" placeholder="रकम ₹" inputmode="numeric"><input id="ln" placeholder="किसलिए? (जैसे प्रसाद, दरी, दान)">
+ <button class="b p" onclick="addL()">+ एंट्री जोड़ें</button></div>`:lock)+
+ `<div class="c"><h3>पूरा हिसाब</h3>${[...r].reverse().map(x=>`<div class="r"><div><b>${esc(x.n||'-')}</b><br><small>${fd(x.d)} · बचत ${rs(x.b)}</small></div><div><b class="${x.j?'gn':'x'}">${x.j?'+':'−'}${rs(x.a)}</b> ${x.pid?eb('p',x.pid)+' '+db('p',x.pid):eb('l',x.id)+' '+db('l',x.id)}</div></div>`).join('')||'<small>कोई एंट्री नहीं</small>'}</div>
+ <button class="b p" onclick="openU(this.dataset.u)" data-u="https://wa.me/?text=${encodeURIComponent('सुंदरकांड समिति हिसाब\nकुल जमा: '+rs(J)+'\nकुल खर्च: '+rs(Kh)+'\nबचत: '+rs(J-Kh)+'\nकुल पाठ: '+S.p.length)}">📤 हिसाब WhatsApp पर भेजें</button>`}
+function addL(){if(!A())return;const a=+$('#la').value;if(!a)return;S.l.push({id:uid(),d:$('#ld').value||today(),j:+$('#lt').value,a,n:$('#ln').value.trim()});save();render()}
+
+function vPg(){return `<div class="c"><h3>📢 सूचनाएँ</h3>`+(adm?`<textarea id="nx" rows="3" placeholder="नई सूचना लिखें"></textarea><button class="b p" onclick="addN()">+ सूचना डालें</button>`:'')+([...S.n].reverse().map(n=>`<div class="r"><div>${esc(n.x).replace(/\n/g,'<br>')}<br><small>${fd(n.d)}</small></div><div>${adm?`<button class="s x" onclick="delN('${n.id}')">${armed==='n'+n.id?'पक्का?':'हटाएँ'}</button>`:''}</div></div>`).join('')||'<small>कोई सूचना नहीं</small>')+`</div>`+(adm?'':lock)+S.g.map((g,i)=>`<div class="c"><input id="gt${i}" value="${esc(g.t)}" ${adm?'':'readonly'} style="font-weight:700"><textarea id="gx${i}" rows="14" ${adm?'':'readonly'} placeholder="यहाँ कुछ भी लिखें...">${esc(g.x)}</textarea>${adm?`<button class="b p" onclick="saveG(${i})">💾 सेव करें</button><button class="b x" onclick="delG(${i})">${armed==='g'+i?'पक्का हटाएँ?':'🗑 यह पन्ना हटाएँ'}</button>`:''}</div>`).join('')+(adm?`<button class="b p" onclick="addG()">+ नया पन्ना जोड़ें</button>`:'')}
+function addG(){if(!A())return;S.g.push({t:'नया पन्ना',x:''});save();render()}
+function delG(i){if(!A())return;if(armed!=='g'+i){armed='g'+i;render();return}armed='';S.g.splice(i,1);save();render()}
+function addN(){if(!A())return;const x=$('#nx').value.trim();if(!x)return;S.n.push({id:uid(),d:today(),x});save();render()}
+function delN(id){if(!A())return;if(armed!=='n'+id){armed='n'+id;render();return}armed='';S.n=S.n.filter(n=>n.id!=id);save();render()}
+function saveG(i){if(!A())return;S.g[i]={t:$('#gt'+i).value.trim()||S.g[i].t,x:$('#gx'+i).value};save();render()}
+</script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{getFirestore,doc,onSnapshot,setDoc}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const cfg={
+  apiKey:"AIzaSyCyVm6-QanM7RJAWbeUJcS_o3PeFdGxs6Y",
+  authDomain:"sundarkand-samiti.firebaseapp.com",
+  projectId:"sundarkand-samiti",
+  storageBucket:"sundarkand-samiti.firebasestorage.app",
+  messagingSenderId:"124563105071",
+  appId:"1:124563105071:web:aa915d0afbca046ddaedda"
+};
+const app=initializeApp(cfg),au=getAuth(app),fs=getFirestore(app),ref=doc(fs,"app","main");
+window.initFB({
+  onAuth:f=>onAuthStateChanged(au,f),
+  login:(e,p)=>signInWithEmailAndPassword(au,e,p),
+  logout:()=>signOut(au),
+  watch:(f,er)=>onSnapshot(ref,s=>f(s.exists()?s.data():null),er),
+  put:d=>setDoc(ref,d)
+});
+</script>
+</body></html>
